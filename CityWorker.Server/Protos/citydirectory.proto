@@ -22,7 +22,7 @@ message HostRequest {
 
 message HostResponse {
     int64 hostId = 1;
-    int32 cityId = 2;
+    int64 cityId = 2;
     string cityName = 3;
     int64 sessionId = 4;
     int64 requestId = 5;
