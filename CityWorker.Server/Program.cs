@@ -25,6 +25,7 @@ builder.WebHost.ConfigureKestrel(k =>
 
 // Services
 builder.Services.AddGrpc();
+builder.Services.AddSingleton<HostServerData>();
 
 
 var app = builder.Build();

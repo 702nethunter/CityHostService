@@ -13,10 +13,11 @@ message HostRequest {
     int64 hostId = 1;
     string hostName = 2;
     string hostIP = 3;
-    int64 sessionId = 4;
-    int64 requestId = 5;
-    int64 clientSequenceNumber = 6;
-    google.protobuf.Timestamp ClientTimestamp = 7;
+    string hostVersion=4;
+    int64 sessionId = 5;
+    int64 requestId = 6;
+    int64 clientSequenceNumber = 7;
+    google.protobuf.Timestamp ClientTimestamp = 8;
 }
 
 message HostResponse {
