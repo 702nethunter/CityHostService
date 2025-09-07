@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Serilog;
 using Microsoft.AspNetCore.Builder;  
 using Microsoft.AspNetCore.Hosting;
-
-
+using CityWorker.Models;
+using CityWorker.Services;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -16,24 +16,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 
 // HTTP/2 for gRPC (dev: cleartext; prod: use HTTPS)
-builder.WebHost.ConfigureKestrel(k =>
-{
-    k.ListenAnyIP(5001, o => o.Protocols = HttpProtocols.Http2);
-    // For TLS in prod:
-    // k.ListenAnyIP(5001, o => { o.UseHttps("cert.pfx","password"); o.Protocols = HttpProtocols.Http2; });
-});
+
 
 // Services
+builder.Services.Configure<BootstrapOptions>(builder.Configuration.GetSection("Bootstrap"));
+builder.Services.AddSingleton<ICityCache, CityCache>(); // Fixed: Services not Sevices
+builder.Services.AddHttpClient<WikidataClient>();
 builder.Services.AddGrpc();
 builder.Services.AddSingleton<HostServerData>();
-
+builder.Services.AddHostedService<CityBootstrapper>(); // Fixed: AddHostedService not AddHostedSevice
 
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
 
 app.MapGrpcService<CityDirectoryService>();
-
 
 app.MapGet("/", () => "CityWorker gRPC is running. Call city.worker.v1.CityDirectory/RegisterHost");
 
