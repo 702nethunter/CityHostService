@@ -16,7 +16,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 
 // HTTP/2 for gRPC (dev: cleartext; prod: use HTTPS)
-
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenLocalhost(5003, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http2; // Force HTTP/2
+        listenOptions.UseHttps(); // Use development certificate
+    });
+    
+    // Optional: Also listen on HTTP/1.1 for REST endpoints
+    options.ListenLocalhost(5000, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1;
+    });
+});
 
 // Services
 builder.Services.Configure<BootstrapOptions>(builder.Configuration.GetSection("Bootstrap"));

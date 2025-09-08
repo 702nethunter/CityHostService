@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package city.worker.v1;
+option csharp_namespace = "CityWorker.Proto";
+
+import "google/protobuf/timestamp.proto";
+
+service CityDirectory {
+    rpc registerHost (HostRequest) returns (HostResponse);
+}
+
+message HostRequest {
+    int64 hostId = 1;
+    string hostName = 2;
+    string hostIP = 3;
+    string hostVersion=4;
+    int64 sessionId = 5;
+    int64 requestId = 6;
+    int64 clientSequenceNumber = 7;
+    google.protobuf.Timestamp ClientTimestamp = 8;
+}
+
+message HostResponse {
+    int64 hostId = 1;
+    int64 cityId = 2;
+    string cityName = 3;
+    int64 sessionId = 4;
+    int64 requestId = 5;
+    google.protobuf.Timestamp ServerTimestamp = 6;
+    bool status=7;
+}
