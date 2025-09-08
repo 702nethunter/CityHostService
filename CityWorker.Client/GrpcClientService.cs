@@ -18,26 +18,45 @@ public class GrpcClientService
     public GrpcClientService(string serverUrl,ILogger<GrpcClientService> logger)
     {
         _logger = logger;
-        if(serverUrl.StartsWith("http://",StringComparison.OrdinalIgnoreCase))
-        {
-            var sockets = new SocketsHttpHandler
-            {
-                EnableMultipleHttp2Connections=true
-            };
-            sockets.SslOptions=null;
-            sockets.AllowAutoRedirect=false;
-
-            _channel = GrpcChannel.ForAddress(serverUrl,new GrpcChannelOptions{
-                HttpHandler = sockets
-            });
-        }
-        else
-        {
-           _channel = GrpcChannel.ForAddress(serverUrl);
-        }
+        _channel = CraeteSecureChannel(serverUrl);
         _client = new CityDirectory.CityDirectoryClient(_channel);
             
         _logger.LogInformation("gRPC client initialized for server: {ServerUrl}", serverUrl);
+    }
+    private bool IsRunningInContainer()
+    {
+        return Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true" ||
+               File.Exists("/.dockerenv");
+    }
+    private GrpcChannel CraeteSecureChannel(string serverUrl)
+    {
+        var httpHandler = new HttpClientHandler();
+
+        if (IsRunningInContainer() || Environment.GetEnvironmentVariable("BYPASS_SSL_VALIDATION") == "true")
+        {
+            httpHandler.ServerCertificateCustomValidationCallback = 
+                (message, cert, chain, sslPolicyErrors) =>
+                {
+                    if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.None)
+                        return true;
+
+                    // For localhost development, allow self-signed certificates
+                    if (serverUrl.Contains("localhost") || serverUrl.Contains("127.0.0.1"))
+                    {
+                        _logger?.LogWarning("Accepting self-signed certificate for {Server}", serverUrl);
+                        return true;
+                    }
+
+                    _logger?.LogError("SSL certificate error: {Errors}", sslPolicyErrors);
+                    return false;
+                };
+        }
+
+        return GrpcChannel.ForAddress(serverUrl, new GrpcChannelOptions
+        {
+            HttpHandler = httpHandler
+        });
+
     }
    private GrpcChannel CreateHttp11Channel(string serverUrl)
     {
