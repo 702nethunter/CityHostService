@@ -1,6 +1,7 @@
 # .NET build outputs
 bin/
 obj/
+out/
 *.user
 *.suo
 *.userosscache
@@ -59,6 +60,7 @@ logs/
 # Temp files
 *.tmp
 *.temp
+*.out
 
 # Local user-specific files
 *.rsuser

@@ -59,7 +59,7 @@ public class HostServerData
             lock (_assignmentLock)
             {
                 assingedCity = cities[_currentCityIndex%cities.Count];
-                _currentCityIndex++;
+                Interlocked.Increment(ref _currentCityIndex);
 
                 if(_currentCityIndex>=cities.Count)
                 {
