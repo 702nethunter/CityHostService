@@ -36,9 +36,10 @@ builder.Services.Configure<BootstrapOptions>(builder.Configuration.GetSection("B
 builder.Services.AddSingleton<ICityCache, CityCache>(); // Fixed: Services not Sevices
 builder.Services.AddHttpClient<WikidataClient>();
 builder.Services.AddGrpc();
+builder.Services.AddSingleton<CityBootstrapper>();
 builder.Services.AddSingleton<HostServerData>();
-builder.Services.AddHostedService<CityBootstrapper>(); // Fixed: AddHostedService not AddHostedSevice
-
+builder.Services.AddHostedService<CityWorkerService>(); // Fixed: AddHostedService not AddHostedSevice
+builder.Services.AddSingleton<SnowflakeIdGenerator>(provider=> new SnowflakeIdGenerator(1));
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
@@ -46,5 +47,6 @@ app.UseSerilogRequestLogging();
 app.MapGrpcService<CityDirectoryService>();
 
 app.MapGet("/", () => "CityWorker gRPC is running. Call city.worker.v1.CityDirectory/RegisterHost");
+_ = app.Services.GetRequiredService<HostServerData>();
 
 await app.RunAsync();

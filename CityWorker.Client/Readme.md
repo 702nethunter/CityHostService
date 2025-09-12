@@ -1,0 +1,1 @@
+podman run -it --rm --network=host cityworker-client:latest

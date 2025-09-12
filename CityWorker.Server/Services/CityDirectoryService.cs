@@ -22,18 +22,36 @@ public class CityDirectoryService : CityDirectory.CityDirectoryBase
             request.HostId, request.HostName, request.HostIP, request.SessionId);
 
        var mappedCity = await _serverDataObj.GetCityMapping(request.HostId);
-       _logger.LogInformation($"Mapped City for Host ID :{request.HostId} ,City Name:{mappedCity.CityName}, City Id:{mappedCity.CityId}");
-        var resp = new HostResponse
-        {
-            HostId = request.HostId,
-            CityId = mappedCity.CityId,
-            CityName = mappedCity.CityName,
-            SessionId = request.SessionId,
-            RequestId = request.RequestId,
-            ServerTimestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow),
-            Status = true
-        };
+       HostResponse resp=null;
+       if(mappedCity!=null)
+       {
+            _logger.LogInformation($"Mapped City for Host ID :{request.HostId} ,City Name:{mappedCity.CityName}, City Id:{mappedCity.CityId}");
+             resp = new HostResponse
+            {
+                HostId = request.HostId,
+                CityId = mappedCity.CityId,
+                CityName = mappedCity.CityName,
+                SessionId = request.SessionId,
+                RequestId = request.RequestId,
+                ServerTimestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow),
+                Status = true
+            };
+       }
+       else
+       {
+          _logger.LogInformation($"No city was mapped for HostId:{request.HostId}");
+           resp = new HostResponse{
+                HostId = request.HostId,
+                CityId = 0,
+                CityName = string.Empty,
+                SessionId = request.SessionId,
+                RequestId = request.RequestId,
+                ServerTimestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow),
+                Status = false
+          };
+       }
 
         return resp;
     }
+    
 }
